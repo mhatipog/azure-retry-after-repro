@@ -1,4 +1,4 @@
-# DRAFT ONLY — DO NOT SUBMIT UPSTREAM WITHOUT CI EVIDENCE
+# UPSTREAM ISSUE DRAFT — OFFICIAL SDK BEHAVIOR REPRODUCED
 
 Proposed title: **[azure-core] Retry-After wait appears to exceed RetryPolicy operation timeout (sync + async)**
 
@@ -8,7 +8,7 @@ The official `azure-core` retry policy appears to request an HTTP transport slee
 
 The intended semantics of the `timeout` option should be confirmed with maintainers before describing this as a definitive bug.
 
-## Reproduction — pending verification
+## Reproduction — verified on GitHub Actions
 
 This repository contains `azure_retry_after_repro.py`, a **no-network** characterization using:
 
@@ -18,13 +18,14 @@ This repository contains `azure_retry_after_repro.py`, a **no-network** characte
 - A virtual wall clock to observe whether `transport.sleep(120)` is requested despite a one-second operation timeout.
 - Raw JSON evidence for both Python 3.11 and 3.13, uploaded by GitHub Actions.
 
-**Fill in only after actual CI jobs complete:**
+**Verified results:**
 
-- Run: `[link]`
-- Commit: `[SHA]`
-- Python + azure-core version: `[from artifact]`
-- Sync sleep/attempts/result: `[from artifact]`
-- Async sleep/attempts/result: `[from artifact]`
+- [GitHub Actions run #3](https://github.com/mhatipog/azure-retry-after-repro/actions/runs/38855964616) — two successful jobs, official `azure-core==1.41.0`.
+- [Python 3.11 artifact](https://github.com/mhatipog/azure-retry-after-repro/actions/runs/38855964616/artifacts/12027610082) / [Python 3.13 artifact](https://github.com/mhatipog/azure-retry-after-repro/actions/runs/38855964616/artifacts/12027600121).
+- Source commit (PR head): `601073c36df4644856bb55b5d67b3f52bf1e6d56`.
+- **Sync:** requested sleep `[120.0]` seconds; one transport request; `ServiceResponseTimeoutError` after advancing virtual wall clock.
+- **Async:** identical to sync on both Python versions.
+- This is an observed virtual-clock sleep **request**, not an actual 120-second wall-clock delay.
 
 ## Expected
 
@@ -32,7 +33,7 @@ If the retry timeout represents a total operation budget inclusive of waiting, s
 
 ## Actual
 
-**Not yet verified against official installed Microsoft SDK.** Consult the CI evidence JSON and runner logs.
+**Verified in official unmodified published `azure-core==1.41.0`** under an in-memory transport and virtual clock, on Python 3.11.17 and 3.13.16. Both sync and async pipelines invoked `transport.sleep(120)` despite `timeout=1`, then raised `ServiceResponseTimeoutError` without a second HTTP send. See [EVIDENCE.md](EVIDENCE.md) and raw artifacts. This does not establish Microsoft's intended timeout semantics or live service impact.
 
 ## Prior report
 
