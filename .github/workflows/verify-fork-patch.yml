@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: mhatipog/azure-sdk-for-python
-          ref: 1bbd45772515939a3147422b05db17ac8a0ccdbd
+          ref: 644eb472936b478c2b5e18529d1c45b0910442dd
           path: azure-sdk-src
           sparse-checkout: |
             sdk/core/azure-core
