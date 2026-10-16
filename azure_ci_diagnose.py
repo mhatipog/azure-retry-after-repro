@@ -9,7 +9,7 @@ PROJECTS = (
     "https://dev.azure.com/azure-sdk/public",
     "https://dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756",
 )
-BUILDS = (6966021, 6966022, 6966023)
+BUILDS = (6967405, 6967407, 6967427)
 DIAGNOSTIC = re.compile(r"##\[error\]|\berror\b|\bfail(?:ed|ure)?\b|Traceback|Exception|AssertionError|black|pylint|mypy|pyright|pytest", re.I)
 
 
@@ -99,7 +99,7 @@ def inspect(build):
         chosen = [i for i, line in enumerate(lines) if DIAGNOSTIC.search(line)]
         print(f"  log lines: {len(lines)} matching diagnostics: {len(chosen)}")
 
-        if build == 6966022 and logid == 11:
+        if build == 6967407 and rec.get('name') == 'Prepare Environment':
             print("  Full AutoRest environment failure log:")
             for index, line in enumerate(lines[-120:], max(0, len(lines) - 120)):
                 print(f"    L{index+1}: {line[:400]}")
