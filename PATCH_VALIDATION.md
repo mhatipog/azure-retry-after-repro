@@ -7,3 +7,5 @@ This PR executes a sparse checkout of that exact source commit (not the PyPI rel
 Test outcomes must be inspected in the raw job logs. If failing, fix test assumptions or the source patch before considering upstream submission.
 
 The original defect was previously reproduced using the unchanged published SDK in [Actions run #3](https://github.com/mhatipog/azure-retry-after-repro/actions/runs/38855964616).
+
+The focused matrix uses `pytest --noconftest` because these in-memory tests do not need Azure SDK's unrelated OpenTelemetry/service fixture dependencies.
