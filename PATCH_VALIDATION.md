@@ -1,6 +1,6 @@
 # Proposed Microsoft fix — independent CI verification
 
-The Microsoft SDK fix is on `mhatipog/azure-sdk-for-python` branch `fix/retry-after-operation-timeout`, pinned at commit `1bbd45772515939a3147422b05db17ac8a0ccdbd`.
+The Microsoft SDK fix is on `mhatipog/azure-sdk-for-python` branch `fix/retry-after-operation-timeout`, pinned at commit `644eb472936b478c2b5e18529d1c45b0910442dd`.
 
 This PR executes a sparse checkout of that exact source commit (not the PyPI release) and runs the native pytest regression suite on Python 3.11 and 3.13. It uses no Azure endpoints or credentials.
 
@@ -13,3 +13,5 @@ The focused matrix uses `pytest --noconftest` because these in-memory tests do n
 The updated matrix also runs an explicit **red baseline**: the same 16 tests must fail in precisely 12 cases against the original official wheel, then pass in all cases against the pinned patch source.
 
 A final CI gate checks Black formatting of all three candidate upstream files.
+
+Black formatting issues found in the initial candidate are corrected in the pinned patch; this run rechecks red baseline, green patch, and formatter.
