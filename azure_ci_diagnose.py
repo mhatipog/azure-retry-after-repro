@@ -98,6 +98,12 @@ def inspect(build):
         lines = content.splitlines()
         chosen = [i for i, line in enumerate(lines) if DIAGNOSTIC.search(line)]
         print(f"  log lines: {len(lines)} matching diagnostics: {len(chosen)}")
+
+        if build == 6966022 and logid == 11:
+            print("  Full AutoRest environment failure log:")
+            for index, line in enumerate(lines[-120:], max(0, len(lines) - 120)):
+                print(f"    L{index+1}: {line[:400]}")
+
         displayed = set()
         for pos in chosen[-24:]:
             for index in range(max(0, pos - 1), min(len(lines), pos + 3)):
