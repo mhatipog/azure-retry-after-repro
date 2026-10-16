@@ -10,7 +10,7 @@ PROJECTS = (
     "https://dev.azure.com/azure-sdk/29ec6040-b234-4e31-b139-33dc4287b756",
 )
 BUILDS = (6966021, 6966022, 6966023)
-DIAGNOSTIC = re.compile(r"##\\[error\\]|\\berror\\b|\\bfail(?:ed|ure)?\\b|Traceback|Exception|AssertionError|black|pylint|mypy|pyright|pytest", re.I)
+DIAGNOSTIC = re.compile(r"##\[error\]|\berror\b|\bfail(?:ed|ure)?\b|Traceback|Exception|AssertionError|black|pylint|mypy|pyright|pytest", re.I)
 
 
 def fetch(url):
