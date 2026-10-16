@@ -11,3 +11,5 @@ The original defect was previously reproduced using the unchanged published SDK 
 The focused matrix uses `pytest --noconftest` because these in-memory tests do not need Azure SDK's unrelated OpenTelemetry/service fixture dependencies.
 
 The updated matrix also runs an explicit **red baseline**: the same 16 tests must fail in precisely 12 cases against the original official wheel, then pass in all cases against the pinned patch source.
+
+A final CI gate checks Black formatting of all three candidate upstream files.
