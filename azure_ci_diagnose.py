@@ -13,8 +13,8 @@ BUILDS = (6966021, 6966022, 6966023)
 DIAGNOSTIC = re.compile(r"##\[error\]|\berror\b|\bfail(?:ed|ure)?\b|Traceback|Exception|AssertionError|black|pylint|mypy|pyright|pytest", re.I)
 
 
-def fetch(url):
-    req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "azure-sdk-public-ci-diagnostic"})
+def fetch(url, accept="application/json"):
+    req = urllib.request.Request(url, headers={"Accept": accept, "User-Agent": "azure-sdk-public-ci-diagnostic"})
     try:
         with urllib.request.urlopen(req, timeout=18) as response:
             body = response.read(2_000_000)
@@ -44,6 +44,40 @@ def inspect(build):
     if not timeline:
         print("UNAVAILABLE: public timeline could not be retrieved", flush=True)
         return
+
+    for path in (
+        f"/_apis/test/runs?buildUri=vstfs%3A%2F%2F%2FBuild%2FBuild%2F{build}&api-version=7.1",
+        f"/_apis/testresults/runs?buildId={build}&api-version=7.1-preview.1",
+    ):
+        status, body = fetch(project + path)
+        print(f"Test runs query {path.split('?')[0]}: HTTP {status}")
+        if status == 200:
+            try:
+                value = json.loads(body)
+                runs = value.get("value", [])
+                print(f"Test runs returned: {len(runs)}, reported total: {value.get('count')}")
+                for run in runs[:25]:
+                    if not isinstance(run, dict):
+                        continue
+                    print(f"  run id={run.get('id')} name={run.get('name')} failed={run.get('statistics', {}).get('failedTests')}")
+                    rid = run.get("id")
+                    if rid and (run.get('statistics', {}).get('failedTests') or run.get('uncompletedTests') or run.get('state') == "Completed"):
+                        results_url = f"{project}/_apis/test/runs/{rid}/results?outcomes=Failed&api-version=7.1"
+                        code, details = fetch(results_url)
+                        print(f"    failed results HTTP {code}")
+                        if code == 200:
+                            try:
+                                data = json.loads(details)
+                                for result in data.get("value", [])[:7]:
+                                    print("      test:", str(result.get("automatedTestName") or result.get("testCaseTitle"))[:180])
+                                    print("      error:", str(result.get("errorMessage"))[:500])
+                            except json.JSONDecodeError:
+                                print("      not json")
+            except json.JSONDecodeError:
+                print("Invalid test runs JSON", body[:200])
+        else:
+            print("Test API response excerpt:", body[:120])
+
     records = timeline.get("records", [])
     failing = [x for x in records if x.get("result") == "failed" or any(i.get("type") == "error" for i in x.get("issues", []))]
     print(f"Timeline records: {len(records)}, failed/error records: {len(failing)}")
@@ -56,7 +90,7 @@ def inspect(build):
         logid = log.get("id")
         if logid is None:
             continue
-        status, content = fetch(f"{project}/_apis/build/builds/{build}/logs/{logid}?api-version=7.1")
+        status, content = fetch(f"{project}/_apis/build/builds/{build}/logs/{logid}?api-version=7.1", accept="text/plain")
         print(f"  log {logid}: HTTP {status}, bytes received {len(content)}")
         if status != 200:
             print("  ", content[:180])
