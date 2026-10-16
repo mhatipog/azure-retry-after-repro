@@ -1,0 +1,17 @@
+name: Diagnose public Azure SDK CI
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-azure-sdk-ci.yml'
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect public upstream CI timelines and errors
+        run: python azure_ci_diagnose.py
