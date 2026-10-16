@@ -1,5 +1,7 @@
 # Azure Retry-After: reproducible timeout characterization
 
+> **Verified 2026-10-16:** [Official SDK CI run #3](https://github.com/mhatipog/azure-retry-after-repro/actions/runs/38855964616) passed on Python 3.11 and 3.13. Both real Microsoft SDK pipelines requested **120 seconds of virtual transport sleep** with `RetryPolicy(timeout=1)`. See [full evidence, logs and checksums](EVIDENCE.md). No real 120-second wait or Azure endpoint was involved. Upstream issue submission is not yet accepted by Microsoft.
+
 Independent, **no-cloud, no-credentials** verification of the unmodified Microsoft `azure-core==1.41.0` retry policy.
 
 A local fake transport responds to the first GET with HTTP `429` and `Retry-After: 120`, while `RetryPolicy(timeout=1, retry_total=1)` is configured. A virtual clock lets us observe whether the official sync and async pipelines request 120 seconds of sleeping **without waiting in real time**.
