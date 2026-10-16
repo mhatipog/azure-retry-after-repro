@@ -71,6 +71,13 @@ jobs:
           name: original-sdk-expected-failures-py${{ matrix.python-version }}
           path: baseline-failures.txt
           if-no-files-found: warn
+      - name: Check Black formatting of the three proposed upstream files
+        run: |
+          python -m pip install --disable-pip-version-check 'black>=25,<28'
+          python -m black --check --diff --line-length 120 \
+            azure-sdk-src/sdk/core/azure-core/azure/core/pipeline/policies/_retry.py \
+            azure-sdk-src/sdk/core/azure-core/azure/core/pipeline/policies/_retry_async.py \
+            azure-sdk-src/sdk/core/azure-core/tests/test_retry_after_timeout_budget.py
       - name: Run native sync and async regression tests against patched fork
         env:
           PYTHONPATH: ${{ github.workspace }}/azure-sdk-src/sdk/core/azure-core
