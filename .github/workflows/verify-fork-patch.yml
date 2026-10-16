@@ -1,0 +1,52 @@
+name: Verify proposed Azure SDK fork patch
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify-fork-patch.yml'
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test-fork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.13']
+    steps:
+      - name: Check out reproduction repository
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Check out exact Microsoft fork patch commit (sparse)
+        uses: actions/checkout@v4
+        with:
+          repository: mhatipog/azure-sdk-for-python
+          ref: 1bbd45772515939a3147422b05db17ac8a0ccdbd
+          path: azure-sdk-src
+          sparse-checkout: |
+            sdk/core/azure-core
+      - name: Install released SDK dependencies and pytest
+        run: python -m pip install --disable-pip-version-check 'azure-core==1.41.0' 'pytest>=8,<10'
+      - name: Assert imported policy comes from patched fork
+        env:
+          PYTHONPATH: ${{ github.workspace }}/azure-sdk-src/sdk/core/azure-core
+        run: |
+          python - <<'PY'
+          import azure.core
+          print("azure.core package loaded from:", azure.core.__file__)
+          assert "azure-sdk-src/sdk/core/azure-core/azure/core" in azure.core.__file__, "Wrong azure-core source under test!"
+          PY
+      - name: Run native sync and async regression tests against patched fork
+        env:
+          PYTHONPATH: ${{ github.workspace }}/azure-sdk-src/sdk/core/azure-core
+        run: python -m pytest azure-sdk-src/sdk/core/azure-core/tests/test_retry_after_timeout_budget.py -q -ra
