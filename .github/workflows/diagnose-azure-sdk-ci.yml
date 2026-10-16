@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/diagnose-azure-sdk-ci.yml'
+      - 'azure_ci_diagnose.py'
 permissions:
   contents: read
 jobs:
