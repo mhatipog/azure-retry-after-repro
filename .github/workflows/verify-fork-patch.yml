@@ -46,6 +46,31 @@ jobs:
           print("azure.core package loaded from:", azure.core.__file__)
           assert "azure-sdk-src/sdk/core/azure-core/azure/core" in azure.core.__file__, "Wrong azure-core source under test!"
           PY
+      - name: Control - same tests must fail on original published SDK
+        env:
+          PYTHONPATH: ''
+        run: |
+          python - <<'PY'
+          import azure.core
+          print("Unmodified baseline SDK:", azure.core.__file__)
+          assert "site-packages" in azure.core.__file__
+          PY
+          set +e
+          python -m pytest --noconftest azure-sdk-src/sdk/core/azure-core/tests/test_retry_after_timeout_budget.py -q --tb=no | tee baseline-failures.txt
+          result=${PIPESTATUS[0]}
+          set -e
+          if [ "$result" -eq 0 ]; then
+            echo "Unexpected: original SDK passed the new regressions"
+            exit 1
+          fi
+          grep -E '12 failed, 4 passed' baseline-failures.txt
+      - name: Keep original SDK red-test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-sdk-expected-failures-py${{ matrix.python-version }}
+          path: baseline-failures.txt
+          if-no-files-found: warn
       - name: Run native sync and async regression tests against patched fork
         env:
           PYTHONPATH: ${{ github.workspace }}/azure-sdk-src/sdk/core/azure-core
